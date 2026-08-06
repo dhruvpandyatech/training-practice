@@ -1,74 +1,102 @@
+import {
+    signupSchema,
+    signinSchema
+} from "../validators/authValidator.js";
 
-app.post('/signup', async (req, res) => {
+import {
+    signupService,
+    signinService
+} from "../services/authService.js";
+
+
+
+export const signup = async (req, res) => {
     try {
-        // console.log("Inside signup");
-        const { email } = req.body.name;
-        const user = UserModel.findOne({
-            email: result.data.email
-        })
-        if (user) {
-            return res.json({ "mssge": "user alreadt exists, try with a diff email" })
+
+        
+        const result = signupSchema.safeParse(req.body);
+
+        if (!result.success) {
+            return res.status(400).json({
+                error: result.error
+            });
         }
-        const result = await signupSchema.safeParse(req.body);
 
-        if (!result) {
-            console.log(result.error.results);
+        
+        const user = await signupService(result.data);
 
-            res.status(401).json({ "err": "error in user" })
-        }
-        // console.log(result.data);
-        // console.log(req.body);
+        return res.status(201).json({
+            message: "User created successfully",
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email
+            }
+        });
 
-        const { name, email, password } = result.data;
-        const salt = await bcrypt.genSalt();
-        const hashedPassword = await bcrypt.hash(password, salt)
-        await UserModel.create({
-            name: name,
-            email: email,
-            password: hashedPassword
-        })
-        res.status(200).json({ "mssge": "User created successfully" });
-    }
-    catch (err) {
+    } catch (err) {
+
         console.log(err);
-        res.json(err);
+
+        return res.status(400).json({
+            error: err.message
+        });
     }
-})
+};
 
 
-app.post("/signin", async (req, res) => {
+// SIGNIN
+export const signin = async (req, res) => {
     try {
-        const result = await signinSchema.safeParse(req.body);
-        if (!result) {
-            console.log(result.error.results);
-            res.status(401).json({ "err": result.err.results })
-        }
-        console.log(result.data);
 
-        const { email, password } = result.data;
-        const user = await UserModel.findOne({
-            email: email
-        })
+        
+        const result = signinSchema.safeParse(req.body);
 
-        if (!user) {
-            return res.json({ "error": "user not found" })
-        }
-        const hashedPassword = user.password;
-        console.log(hashedPassword);
-
-        const passwordMatched = await bcrypt.compare(password, hashedPassword);
-        if (!passwordMatched) {
-            return res.status(401).json({ "error": "Invalid credentials" });
+        if (!result.success) {
+            return res.status(400).json({
+                error: result.error
+            });
         }
 
-        const token = jwt.sign(JSON.stringify(user._id), process.env.JWT_SECRET);
+        
+        const token = await signinService(result.data);
+
+
         res.cookie("token", token, {
-            httpOnly: true,
-        })
-    }
-    catch (err) {
+            httpOnly: true
+        });
+
+        return res.status(200).json({
+            message: "Signin successful"
+        });
+
+    } catch (err) {
+
         console.log(err);
 
-        return res.send(err)
+        return res.status(401).json({
+            error: err.message
+        });
     }
-})
+};
+
+
+
+export const logout = async (req, res) => {
+    try {
+
+        res.clearCookie("token");
+
+        return res.status(200).json({
+            message: "Logged out successfully"
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        return res.status(500).json({
+            error: "Something went wrong"
+        });
+    }
+};
