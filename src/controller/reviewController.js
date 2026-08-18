@@ -53,11 +53,62 @@ const getReviews = async(req,res)=>{
     }
 }
 
+const getReviewById = async(req,res)=>{
+    try{
+        const {id} = req.params;
+        const review = await reviewServices.reviewById(id);
+        res.status(200).json({
+            review:review
+        })
+    }
+    catch(err)
+    {
+        console.log(err);
+        res.status(500).json({
+            err:err.message
+        })
+    }
+}
 
+// update review test karna baaki he abi
+const updateReview = async(req,res)=>{
+    try{
+        const updatedReview = await reviewServices.updateReview(req.params.id,req.body);
+        return res.status(200).json({success:true,reviewAfterUpdating:updatedReview})
+    }
+    catch(err)
+    {
+        console.log(err);
+        return res.status(500).json({
+            success:false,
+            message:err.message
+        })
+    }
+}
 
+const deleteReview = async(req,res)=>{
+    try{
+        const deleteReview = await reviewServices.deleteReview(req.params.id);
+        return res.status(200).json({
+            success:true,
+            message:"Review deleted successfullyy",
+            deletedReview:deletedReview
+        })
+    }
+    catch(err)
+    {
+        console.log(err);
+        return res.status(501).json({
+            err:err.message
+        })
+    }
+
+}
 
 export const reviewController = {
     createReview,
     getReviews,
-    
+    getReviewById,
+    updateReview,
+    deleteReview
 }
