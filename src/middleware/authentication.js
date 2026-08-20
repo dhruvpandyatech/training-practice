@@ -1,7 +1,7 @@
 import authModel from "../models/AuthModel.js";
 import jwt from "jsonwebtoken";
 import errors from "../utils/apiError.js";
-
+import StaffModel from "../models/staffModel.js";
 const secretKey = process.env.secretKey;
 
 const authMiddleWare = async (req, res, next) => {
@@ -15,8 +15,8 @@ const authMiddleWare = async (req, res, next) => {
         }
 
         const decoded = jwt.verify(token, secretKey);
-
-        const userData = await authModel.findById(decoded.id);
+// pehle apan ne authModel kiya lekin assignment 6 ke hisab se ye staff vala
+        const userData = await StaffModel.findById(decoded.id);
 
         if (!userData) {
             return next(
