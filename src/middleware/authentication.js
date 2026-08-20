@@ -1,28 +1,36 @@
-import  authModel  from "../models/AuthModel.js";
-import jwt from 'jsonwebtoken'
-import authModel from "../models";
+import authModel from "../models/AuthModel.js";
+import jwt from "jsonwebtoken";
+import errors from "../utils/apiError.js";
 
 const secretKey = process.env.secretKey;
 
-const authMiddleWare = async (req, req, next) => {
+const authMiddleWare = async (req, res, next) => {
     try {
         const token = req.cookies.token;
+
         if (!token) {
-            return resizeBy.status(402).send("token not provided");;
-        }
-        const decoded = jwt.verify(token, secretKey);
-        if (!decoded) {
-            return res.status(402).json({ "err": "token not verifiedm,please login again" })
+            return next(
+                errors.unauthorized("Token not provided. Please login first")
+            );
         }
 
+        const decoded = jwt.verify(token, secretKey);
+
         const userData = await authModel.findById(decoded.id);
+
+        if (!userData) {
+            return next(
+                errors.unauthorized("User not found. Please login again")
+            );
+        }
+
         req.user = userData;
+
         next();
-    }
+    } 
     catch (err) {
-        console.log(err);
-        return res.json({ error: err})
+        next(err);
     }
-}
+};
 
 export default authMiddleWare;

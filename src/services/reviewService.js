@@ -1,10 +1,12 @@
-import mongoose from "mongoose";
+import errors from "../utils/apiError.js";
 import reviewModel from "../models/reviewModel.js";
+
+
 const createReview = async (data) => {
     const { reviewerName, title } = data;
     const alreadyReviewed = await reviewModel.findOne({ reviewerName, title });
     if (alreadyReviewed) {
-        throw new Error("pehle review de diya he bhai saaab");
+        throw errors.conflict("this review is already exists")
     }
     const review = await reviewModel.create(data);
     return review;
@@ -47,9 +49,7 @@ const reviewById = async (id) => {
 
     const review = await reviewModel.findById(id);
     if (!review) {
-        const error = new Error("Review not found");
-        error.statusCode = 404;
-        throw error;
+        throw errors.notFound("Review not found")
     }
     return review;
 }
@@ -64,7 +64,7 @@ const updateReview = async (id, data) => {
 
     const review = await reviewModel.findById(id);
     if (!review) {
-        throw new Error(404);
+        throw errors.notFound("review not found");
     }
 
     if (data.title !== undefined) {
@@ -95,14 +95,17 @@ const deleteReview = async (id) => {
 
 
     if (!deletedReview) {
-        throw new Error(404);
+        throw errors.notFound("Review not found");
     }
     return deletedReview;
 }
 
 const approve = async (id) => {
     const review = await reviewModel.findById(id);
-    console.log(review.status);
+    if(!review)
+    {
+        throw errors.notFound("Review  not found");
+    }
     
     if (review.status === "approved") {
         const error = new Error("Review is already approved");
@@ -111,7 +114,7 @@ const approve = async (id) => {
     }
     else {
         review.status = "approved";
-        review.save();
+        await review.save();
         return review;
     }
 }
