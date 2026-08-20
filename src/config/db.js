@@ -1,6 +1,5 @@
 import "dotenv/config";
 
-console.log("mongoUrl:", process.env.mongoUrl);
 import dns from "dns";
 dns.setServers([
     '1.1.1.1',

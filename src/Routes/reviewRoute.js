@@ -9,7 +9,9 @@ route.post("/createReview",validationMiddleWare(createReviewSchema),reviewContro
 route.get("/getReviews",validationMiddleWare(getReviewsSchema,"query"),reviewController.getReviews);
 // yaha b check karna he kaha se hua he kyakya
 route.get("/reviewById/:id",validationMiddleWare(reviewIdSchema,"params"),reviewController.getReviewById);
-route.patch("/updateReview/:id",validationMiddleWare(updateReviewSchema),validationMiddleWare(reviewIdSchema,"params"),reviewController.updateReview);
+route.patch("/updateReview/:id",validationMiddleWare(reviewIdSchema,"params"),validationMiddleWare(updateReviewSchema),validationMiddleWare(reviewIdSchema,"params"),reviewController.updateReview);
 route.delete("/delete/:id",validationMiddleWare(reviewIdSchema,"params"),reviewController.deleteReview);
+// bonus vala 
 
+route.patch("/reviews/:id/approve",validationMiddleWare(reviewIdSchema,"params"),reviewController.approve);
 export default route;
